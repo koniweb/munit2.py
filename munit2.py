@@ -67,22 +67,21 @@ def main():
             elif option == 'a':
                 a=[0.0,0.0,0.0]
                 readvec(a,arg)
-                vec[0][:]=a
+                localvec[0][:]=a
                 arg=arg+3
             elif option == 'b':
                 b=[0.0,0.0,0.0]
                 readvec(b,arg)
-                vec[1][:]=b
+                localvec[1][:]=b
                 arg=arg+3
             elif option == 'c':
                 c=[0.0,0.0,0.0]
                 readvec(c,arg)
-                vec[2][:]=c
+                localvec[2][:]=c
                 arg=arg+3
             elif option == 'off':
-                off=[0.0,0.0,0.0]
+                offset=[0.0,0.0,0.0]
                 readvec(off,arg)
-                vec[3][:]=off
                 arg=arg+3
             elif option == 'm':
                 readm(m,arg)
@@ -118,7 +117,11 @@ def main():
     mol=readinfo(inf,file_coord)
 
     # add vec and offset
-    mol.set_periodicity(localvec[0],localvec[1],localvec[2],offset)
+    v=mol.Rvec()
+    if (v[0]==[0.0,0.0,0.0] and v[1]==[0.0,0.0,0.0] and v[2]==[0.0,0.0,0.0]):
+        mol.set_vecs(a=localvec[0],b=localvec[1],c=localvec[2])
+    if mol.Roffset==[0.0,0.0,0.0]:
+        mol.set_vecs(offset=offset)
 
     #-- print info---------------------------------------------------------
     if quiet == 0: printinfo(file_coord,mol,m,factor)
@@ -197,8 +200,8 @@ def readopt(argument):
 def printinfo(file_coord,mol,m,factor):
     print >>sys.stderr, ("{:15s} {:<20s}".format("coordinatefile:", file_coord))
     print >>sys.stderr, ("{:15s} {:<20d}".format("natoms:",mol.natoms))
-    v=mol.vec
-    o=mol.offset
+    v=mol.Rvec()
+    o=mol.Roffset()
     print >>sys.stderr, ("{:15s} {:<15.10f} {:<15.10f} {:<15.10f}".format("vector a:", v[0][0], v[0][1], v[0][2]))
     print >>sys.stderr, ("{:15s} {:<15.10f} {:<15.10f} {:<15.10f}".format("vector b:", v[1][0], v[1][1], v[1][2]))
     print >>sys.stderr, ("{:15s} {:<15.10f} {:<15.10f} {:<15.10f}".format("vector c:", v[2][0], v[2][1], v[2][2]))
@@ -242,7 +245,7 @@ def output(version,out,mol):
     elif (out=="lammps"):
         mol=mol.writelmp("")
     elif (out=="pwscf"):
-        mol=mol.readpwscf("")       
+        mol=mol.writepwscf("")       
     else:
         print >>sys.stderr, "output file type not defined"
         stop()
@@ -254,14 +257,14 @@ def output(version,out,mol):
 def start(version):
     print >>sys.stderr, "#-----------------------------"
     print >>sys.stderr, "#   Multiply UNITbox"
-    print >>sys.stderr, "#   by kweber 2012"
+    print >>sys.stderr, "#   by kweber 2014"
     print >>sys.stderr, "#   version", version
     print >>sys.stderr, "#-----------------------------"
 def stop():
-    print >>sys.stderr, 'While starting munit.sh an error occured. Type "munit.py --h" for help'
+    print >>sys.stderr, 'While starting munit2.sh an error occured. Type "munit2.py --h" for help'
     sys.exit()
 def showhelp():
-    print >>sys.stderr, 'to invoke munit.py you have the following options:'
+    print >>sys.stderr, 'to invoke munit2.py you have the following options:'
     print >>sys.stderr, '--h                   show this help'
     print >>sys.stderr, '--q                   quiet output'
     print >>sys.stderr, '--coo  <coord>        show coordinate file'
@@ -283,7 +286,7 @@ def showhelp():
     print >>sys.stderr, '                        pwscfout'
     print >>sys.stderr, ''
     print >>sys.stderr, 'example:'
-    print >>sys.stderr, 'munit.py --coo test.xyz --a 1 0 0 --b 0 1 0 --c 0 0 1 --m 1 1 1 '
+    print >>sys.stderr, 'munit2.py --coo test.xyz --a 1 0 0 --b 0 1 0 --c 0 0 1 --m 1 1 1 '
     sys.exit()
 
 
