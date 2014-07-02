@@ -84,7 +84,7 @@ def main():
             offset=readvec(arg,offset,'offset')
         # stretch and multiply options
         elif arg[0]=='f':
-            f=readfactor(arg)
+            factor=readfactor(arg)
         elif arg[0]=='m':
             m=readvecint(arg,m,'m')
         # quiet
@@ -108,15 +108,16 @@ def main():
     # read data from pwscf file
     if not datapwscf=="":
         mol.setup_pwscf=mol.SETUP_PWSCF()
-        mol.read_setup_pwscf(datapwscf)
-                                       
+        mol.read_setup_pwscf(datapwscf)                                       
 
     # add vec and offset
-    v=mol.Rvec()
-    if (v[0]==[0.0,0.0,0.0] and v[1]==[0.0,0.0,0.0] and v[2]==[0.0,0.0,0.0]):
+    v=mol.vec()
+    if (v[0]==[0.0,0.0,0.0] and 
+        v[1]==[0.0,0.0,0.0] and 
+        v[2]==[0.0,0.0,0.0]):
         mol.set_vecs(a=localvec[0],b=localvec[1],c=localvec[2])
-    if mol.Roffset==[0.0,0.0,0.0]:
-        mol.set_vecs(offset=offset)
+    if mol.offset==[0.0,0.0,0.0]:
+        mol.set_vecs(off=offset)
 
     #-- print info---------------------------------------------------------
     if quiet == 0: printinfo(file_coord,mol,m,factor)
@@ -163,9 +164,9 @@ def readfilename(argument):
 
 # read factor
 def readfactor(arg):
-    if   len(argu) == 2:
+    if   len(arg) == 2:
         factor=[float(arg[1]),float(arg[1]),float(arg[1])]
-    elif len(argument) == 4:
+    elif len(arg) == 4:
         factor=[float(arg[1]),float(arg[2]),float(arg[3])]
     else:
         print  >>sys.stderr, 'factor not given completly'
@@ -178,7 +179,6 @@ def readin(arg):
         print  >>sys.stderr, 'input type not given completly'
         stop()
     else:
-        print arg
         if   (arg[1] == 'xyz'):
             return 'xyz'
         elif (arg[1] == 'lammps'):
@@ -211,9 +211,9 @@ def readout(arg):
 # printing info
 def printinfo(file_coord,mol,m,factor):
     print >>sys.stderr, ("{:15s} {:<20s}".format("coordinatefile:", file_coord))
-    print >>sys.stderr, ("{:15s} {:<20d}".format("natoms:",mol.natoms))
-    v=mol.Rvec()
-    o=mol.Roffset()
+    print >>sys.stderr, ("{:15s} {:<20d}".format("natoms:",mol.natoms()))
+    v=mol.vec()
+    o=mol.offset()
     print >>sys.stderr, ("{:15s} {:<15.10f} {:<15.10f} {:<15.10f}".format("vector a:", v[0][0], v[0][1], v[0][2]))
     print >>sys.stderr, ("{:15s} {:<15.10f} {:<15.10f} {:<15.10f}".format("vector b:", v[1][0], v[1][1], v[1][2]))
     print >>sys.stderr, ("{:15s} {:<15.10f} {:<15.10f} {:<15.10f}".format("vector c:", v[2][0], v[2][1], v[2][2]))
@@ -226,12 +226,12 @@ def printinfo(file_coord,mol,m,factor):
     print >>sys.stderr
     # print atoms
     print >>sys.stderr, "coordinates:"
-    for i in range(mol.natoms):
+    for i in range(mol.natoms()):
         print  >>sys.stderr, ("{:<6d} {:5s} {:f} {:f} {:f}".format(
-                i, mol.at[i].name,
-                mol.at[i].coord[0],
-                mol.at[i].coord[1],
-                mol.at[i].coord[2]))
+                i, mol.at()[i].type()[0],
+                mol.at()[i].coord()[0],
+                mol.at()[i].coord()[1],
+                mol.at()[i].coord()[2]))
     print >>sys.stderr 
 
 # READING coordinate file
