@@ -190,10 +190,11 @@ def readin(arg):
                 if arg[iarg]=="c":   lchargein=True
                 elif arg[iarg]=="m": lmolin=True
             return ['lammps',lchargein,lmolin]
-        elif (arg[1] == 'pwscfin'):
-            return ['pwscfin']
-        elif (arg[1] == 'pwscfout'):
-            return ['pwscfout']
+        elif (arg[1] == 'pwscf'):
+            if len(arg)==3 and arg[2]=="out":
+                return ['pwscfout']
+            else:
+                return ['pwscfin']
         else:
             print  >>sys.stderr, 'input option not known'
             stop()
@@ -305,16 +306,15 @@ def showhelp():
     print >>sys.stderr, '--off  <x>   <y>   <z>   x, y, z offset of unitvectors'
     print >>sys.stderr, '--f    <a>  [<b>   <c>]  stretch factor for the unitcell '
     print >>sys.stderr, '--m    <x>   <y>   <z>   multiplication in x, y, z direction'
-    print >>sys.stderr, '--out  <option>          option for output'
-    print >>sys.stderr, '                           xyz -- standard'
-    print >>sys.stderr, '                           lammps'
-    print >>sys.stderr, '                           pwscf'
     print >>sys.stderr, '--in   <option>          option for input'
     print >>sys.stderr, '                           xyz -- standard'
-    print >>sys.stderr, '                           lammps'
-    print >>sys.stderr, '                           pwscfin'
-    print >>sys.stderr, '                           pwscfout'
+    print >>sys.stderr, '                           lammps [c] [m] --include charge/mid'
+    print >>sys.stderr, '                           pwscf [in/out]'
     print >>sys.stderr, '--datapwscf <file>       file to read pwscf simulation setup'
+    print >>sys.stderr, '--out  <option>          option for output'
+    print >>sys.stderr, '                           xyz -- standard'
+    print >>sys.stderr, '                           lammps [c] [m] --include charge/mid'
+    print >>sys.stderr, '                           pwscf'
     print >>sys.stderr, ''
     print >>sys.stderr, 'example:'
     print >>sys.stderr, 'munit2.py --coo test.xyz --a 1 --b 0 1 0 --c 0 0 1 --m 1 1 1 '
