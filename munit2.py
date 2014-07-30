@@ -274,7 +274,6 @@ def output(version,out,mol):
     elif (filetype=="lammps"):
         lchargeout=out[1]
         lmolout=out[2]
-        print lchargeout, lmolout
         mol=mol.writelmp("",lcharge=lchargeout,lmoltype=lmolout)
     elif (filetype=="pwscf"):
         mol=mol.writepwscf("")       
