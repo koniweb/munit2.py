@@ -14,9 +14,10 @@
 # 2013-12-11 Version 1.6  -- pwscf output readable                   #
 # 2014-06-26 Version 2.0  -- shift to molecule                       #
 # 2014-06-30 Version 2.1  -- allow to read data from pwscf           #
+# 2014-07-30 Version 2.2  -- lammps input reads charge and molid     #
 #                            TODO: TEST                              #
 ######################################################################
-version="2.1"
+version="2.2"
 
 #----------------------------------------------------------------------
 # import
@@ -35,8 +36,8 @@ import class_molecule as cm
 def main():
     #- variables declaration ------------------------------------------
     ndim=3
-    out='xyz'
-    inf='xyz'
+    out=['xyz']
+    inf=['xyz']
     quiet=int(0);
     datapwscf=""
     # vector, localvec, offset
@@ -180,13 +181,19 @@ def readin(arg):
         stop()
     else:
         if   (arg[1] == 'xyz'):
-            return 'xyz'
+            return ['xyz']
         elif (arg[1] == 'lammps'):
-            return 'lammps'
+            # check for additional options
+            lchargein=False
+            lmolin=False
+            for iarg in range(2,len(arg)):
+                if arg[iarg]=="c":   lchargein=True
+                elif arg[iarg]=="m": lmolin=True
+            return ['lammps',lchargein,lmolin]
         elif (arg[1] == 'pwscfin'):
-            return 'pwscfin'
+            return ['pwscfin']
         elif (arg[1] == 'pwscfout'):
-            return 'pwscfout'
+            return ['pwscfout']
         else:
             print  >>sys.stderr, 'input option not known'
             stop()
@@ -199,11 +206,17 @@ def readout(arg):
         stop()
     else:
         if   (arg[1] == 'xyz'):
-            return 'xyz'
+            return ['xyz']
         elif (arg[1] == 'lammps'):
-            return 'lammps'
+            # check for additional options
+            lchargeout=False
+            lmolout=False
+            for iarg in range(2,len(arg)):
+                if arg[iarg]=="c":   lchargeout=True
+                elif arg[iarg]=="m": lmolout=True
+            return ['lammps',lchargeout,lmolout]
         elif (arg[1] == 'pwscf'):
-            return 'pwscf'
+            return ['pwscf']
         else:
             print  >>sys.stderr, 'output option not known'
             stop()
@@ -236,14 +249,17 @@ def printinfo(file_coord,mol,m,factor):
 
 # READING coordinate file
 def readinfo(inf,file_coord):
+    filetype=inf[0]
     mol=cm.molecule()
-    if   (inf=="xyz"):
+    if   (filetype=="xyz"):
         mol=mol.readxyz(file_coord)
-    elif (inf=="lammps"):
-        mol=mol.readlmp(file_coord)
-    elif (inf=="pwscfin"):
+    elif (filetype=="lammps"):
+        lchargein=inf[1]
+        lmolin=inf[2]
+        mol=mol.readlmp(file_coord,lchargein,lmolin)
+    elif (filetype=="pwscfin"):
         mol=mol.readpwscfin(file_coord)
-    elif (inf=="pwscfout"):
+    elif (filetype=="pwscfout"):
         mol=mol.readpwscfout(file_coord)       
     else:
         print >>sys.stderr, "coordinatefile type not defined"
@@ -252,11 +268,15 @@ def readinfo(inf,file_coord):
 
 # write output file
 def output(version,out,mol):
-    if   (out=="xyz"):
+    filetype=out[0]
+    if   (filetype=="xyz"):
         mol=mol.writexyz("")
-    elif (out=="lammps"):
-        mol=mol.writelmp("")
-    elif (out=="pwscf"):
+    elif (filetype=="lammps"):
+        lchargeout=out[1]
+        lmolout=out[2]
+        print lchargeout, lmolout
+        mol=mol.writelmp("",lchargeout,lmolout)
+    elif (filetype=="pwscf"):
         mol=mol.writepwscf("")       
     else:
         print >>sys.stderr, "output file type not defined"
