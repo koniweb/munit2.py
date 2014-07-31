@@ -13,12 +13,12 @@ option            | description
 --b   [x]  y  [z] | x, y, z components from unitvector b
 --c   [x   y]  z  | x, y, z components from unitvector c
 --off  x   y   z  | x, y, z offset of unitvectors
---f    a  [b   c] | stretch factor for the unitcell
+--f    a  [b   c] | stretch factor for the unitcell  
 --m    x   y   z  | multiplication in x, y, z direction
 --in   option     |  * option for input
                   |  * xyz -- standard
                   |  * lammps [c] [m] --include charge/mid
-                  | pwscf [in/out]
+                  |  * pwscf [in/out]
 --datapwscf file  | file to read pwscf simulation setup
 --out  option     | option for output
                   |  * xyz -- standard
@@ -27,7 +27,9 @@ option            | description
                                                                   
 example:
 --------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 munit2.py --coo test.xyz --a 1 --b 0 1 0 --c 0 0 1 --m 1 1 1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 todo list:
 ==========
