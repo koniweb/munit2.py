@@ -36,9 +36,9 @@ import class_molecule as cm
 def main():
     #- variables declaration ------------------------------------------
     ndim=3
-    out=['xyz']
     inf=['xyz']
-    quiet=int(0);
+    out=['xyz',False]
+    verbose=int(0);
     datapwscf=""
     # vector, localvec, offset
     factor=[float(1.000),float(1.000),float(1.000)]
@@ -88,9 +88,9 @@ def main():
             factor=readfactor(arg)
         elif arg[0]=='m':
             m=readvecint(arg,m,'m')
-        # quiet
-        elif arg[0]=='q':
-            quiet=1
+        # verbose
+        elif arg[0]=='v':
+            verbose=1
         # else
         else:
             start(version)
@@ -98,39 +98,44 @@ def main():
             stop()
 
     #-- START PROGRAM PROMPT ----------------------------------------------
-    if quiet == 0:
-        start(version)
+    start(version)   
+    if verbose == 1:
         print >>sys.stderr  
         print >>sys.stderr,  "COORDINATES:"
 
     #-- READ COORDINATE FILES ---------------------------------------------
     mol=readinfo(inf,file_coord)
-    
-    # read data from pwscf file
-    if not datapwscf=="":
-        mol.setup_pwscf=mol.SETUP_PWSCF()
-        mol.read_setup_pwscf(datapwscf)                                       
+    # check if multiple xyz
+    if ( not out[0]=="xyz" ) or ( out[0]=="xyz" and out[1]==False): 
+        mol=[mol[-1]]
 
-    # add vec and offset
-    v=mol.vec()
-    if (v[0]==[0.0,0.0,0.0] and 
-        v[1]==[0.0,0.0,0.0] and 
-        v[2]==[0.0,0.0,0.0]):
-        mol.set_vecs(a=localvec[0],b=localvec[1],c=localvec[2])
-    if mol.offset==[0.0,0.0,0.0]:
-        mol.set_vecs(off=offset)
-
-    #-- print info---------------------------------------------------------
-    if quiet == 0: printinfo(file_coord,mol,m,factor)
-
-    #-- stretch -----------------------------------------------------------
-    mol.stretch(factor)
-    
-    #-- multiply ----------------------------------------------------------
-    mol.mol_multiply(m[0],m[1],m[2])
-
-    #-- output ------------------------------------------------------------
-    output(version,out,mol)
+    # loop over all molecules in input file
+    for moli in mol:
+        # read data from pwscf file
+        if not datapwscf=="":
+            moli.setup_pwscf=mol.SETUP_PWSCF()
+            moli.read_setup_pwscf(datapwscf)                                       
+        
+        # add vec and offset
+        v=moli.vec()
+        if (v[0]==[0.0,0.0,0.0] and 
+            v[1]==[0.0,0.0,0.0] and 
+            v[2]==[0.0,0.0,0.0]):
+            moli.set_vecs(a=localvec[0],b=localvec[1],c=localvec[2])
+        if moli.offset==[0.0,0.0,0.0]:
+            moli.set_vecs(off=offset)
+        
+        #-- print info---------------------------------------------------------
+        if verbose == 1: printinfo(file_coord,moli,m,factor)
+        
+        #-- stretch -----------------------------------------------------------
+        moli.stretch(factor)
+        
+        #-- multiply ----------------------------------------------------------
+        moli.mol_multiply(m[0],m[1],m[2])
+        
+        #-- output ------------------------------------------------------------
+        output(version,out,moli)
     
 
 #----------------------------------------------------------------------
@@ -207,7 +212,11 @@ def readout(arg):
         stop()
     else:
         if   (arg[1] == 'xyz'):
-            return ['xyz']
+            # check for additional options
+            lmultxyz=False
+            for iarg in range(2,len(arg)):
+                if arg[iarg]=="m":lmultxyz=True
+            return ['xyz',lmultxyz]
         elif (arg[1] == 'lammps'):
             # check for additional options
             lchargeout=False
@@ -265,7 +274,7 @@ def readinfo(inf,file_coord):
     else:
         print >>sys.stderr, "coordinatefile type not defined"
         stop()
-    return mol[-1]
+    return mol
 
 # write output file
 def output(version,out,mol):
@@ -275,9 +284,9 @@ def output(version,out,mol):
     elif (filetype=="lammps"):
         lchargeout=out[1]
         lmolout=out[2]
-        mol=mol.writelmp("",lcharge=lchargeout,lmoltype=lmolout)
+        mol[-1]=mol.writelmp("",lcharge=lchargeout,lmoltype=lmolout)
     elif (filetype=="pwscf"):
-        mol=mol.writepwscf("")       
+        mol[-1]=mol.writepwscf("")       
     else:
         print >>sys.stderr, "output file type not defined"
         stop()
@@ -298,7 +307,7 @@ def stop():
 def showhelp():
     print >>sys.stderr, 'to invoke munit2.py you have the following options:'
     print >>sys.stderr, '--h                      show this help'
-    print >>sys.stderr, '--q                      quiet output'
+    print >>sys.stderr, '--v                      verbose output'
     print >>sys.stderr, '--coo  <coord>           show coordinate file'
     print >>sys.stderr, '--a    <x>  [<y>   <z>]  x, y, z components from unitvector a'
     print >>sys.stderr, '--b   [<x>]  <y>  [<z>]  x, y, z components from unitvector b'
@@ -306,13 +315,13 @@ def showhelp():
     print >>sys.stderr, '--off  <x>   <y>   <z>   x, y, z offset of unitvectors'
     print >>sys.stderr, '--f    <a>  [<b>   <c>]  stretch factor for the unitcell '
     print >>sys.stderr, '--m    <x>   <y>   <z>   multiplication in x, y, z direction'
-    print >>sys.stderr, '--in   <option>          option for input'
-    print >>sys.stderr, '                           xyz -- standard'
+    print >>sys.stderr, '--in   <option>          option for input [xyz]'
+    print >>sys.stderr, '                           xyz'
     print >>sys.stderr, '                           lammps [c] [m] --include charge/mid'
     print >>sys.stderr, '                           pwscf [in/out]'
     print >>sys.stderr, '--datapwscf <file>       file to read pwscf simulation setup'
-    print >>sys.stderr, '--out  <option>          option for output'
-    print >>sys.stderr, '                           xyz -- standard'
+    print >>sys.stderr, '--out  <option>          option for output [xyz]'
+    print >>sys.stderr, '                           xyz [m] -- single or [m]ultiple xyz file'
     print >>sys.stderr, '                           lammps [c] [m] --include charge/mid'
     print >>sys.stderr, '                           pwscf'
     print >>sys.stderr, ''

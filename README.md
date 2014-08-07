@@ -34,3 +34,4 @@ munit2.py --coo test.xyz --a 1 --b 0 1 0 --c 0 0 1 --m 1 1 1
 todo list:
 ==========
 [ ] extensive testing
+[X] add read in of pwscf out for multiple structures
