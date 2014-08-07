@@ -15,9 +15,9 @@
 # 2014-06-26 Version 2.0  -- shift to molecule                       #
 # 2014-06-30 Version 2.1  -- allow to read data from pwscf           #
 # 2014-07-30 Version 2.2  -- lammps input reads charge and molid     #
-#                            TODO: TEST                              #
+# 2014-08-07 Version 2.3  -- multiple xyz output                     #
 ######################################################################
-version="2.2"
+version="2.3"
 
 #----------------------------------------------------------------------
 # import

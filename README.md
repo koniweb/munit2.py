@@ -1,6 +1,6 @@
 Multiply UNITbox
 ================
-version 2.2  
+version 2.3  
 
 to invoke munit2.py you have the following options:  
   
