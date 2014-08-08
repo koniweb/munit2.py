@@ -106,8 +106,11 @@ def main():
     #-- READ COORDINATE FILES ---------------------------------------------
     mol=readinfo(inf,file_coord)
     # check if multiple xyz
-    if ( not out[0]=="xyz" ) or ( out[0]=="xyz" and out[1]==False): 
-        mol=[mol[-1]]
+    if ( (( not out[0]=="xyz" ) or ( out[0]=="xyz" and out[1]==False)) 
+         and (len(mol)>=1) ): mol=[mol[-1]]
+    else: 
+        print >>sys.stderr, "ERROR: Input file does not contain a structure"
+        stop()        
 
     # loop over all molecules in input file
     for moli in mol:
