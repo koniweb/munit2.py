@@ -16,6 +16,7 @@
 # 2014-06-30 Version 2.1  -- allow to read data from pwscf           #
 # 2014-07-30 Version 2.2  -- lammps input reads charge and molid     #
 # 2014-08-07 Version 2.3  -- multiple xyz output                     #
+# 2014-08-14              -- check for input file                    #
 ######################################################################
 version="2.3"
 
@@ -96,9 +97,20 @@ def main():
             start(version)
             print >>sys.stderr, "option ",arg[0]," not known"
             stop()
-
-    #-- START PROGRAM PROMPT ----------------------------------------------
+            
+    
+    #-- PRINT START INFORMATION -------------------------------------------
     start(version)   
+
+    #-- CHECK FOR INPUT FILE ----------------------------------------------
+    try:
+        file_coord
+    except NameError:
+        print >>sys.stderr, "ERROR: Input file not given"
+        stop()
+
+    
+    #-- PRINT COORDINATES -------------------------------------------------
     if verbose == 1:
         print >>sys.stderr  
         print >>sys.stderr,  "COORDINATES:"
