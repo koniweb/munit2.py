@@ -113,7 +113,7 @@ def main():
     #-- PRINT COORDINATES -------------------------------------------------
     if verbose == 1:
         print >>sys.stderr  
-        print >>sys.stderr,  "COORDINATES:"
+        print >>sys.stderr,  "INFORMATION:"
 
     #-- READ COORDINATE FILES ---------------------------------------------
     mol=readinfo(inf,file_coord)
@@ -140,6 +140,7 @@ def main():
         if moli.offset==[0.0,0.0,0.0]:
             moli.set_vecs(off=offset)
         
+
         #-- print info---------------------------------------------------------
         if verbose == 1: printinfo(file_coord,moli,m,factor)
         
@@ -150,8 +151,16 @@ def main():
         moli.mol_multiply(m[0],m[1],m[2])
         
         #-- output ------------------------------------------------------------
+        # set comment as vectors for xyz file
+        moli.set_comment("a {:15.10f} {:15.10f} {:15.10f}  "\
+                         "b {:15.10f} {:15.10f} {:15.10f}  "\
+                         "c {:15.10f} {:15.10f} {:15.10f}".format(
+                moli.vec()[0][0],moli.vec()[0][1],moli.vec()[0][2],
+                moli.vec()[1][0],moli.vec()[1][1],moli.vec()[1][2],
+                moli.vec()[2][0],moli.vec()[2][1],moli.vec()[2][2]))
+
         output(version,out,moli)
-    
+        
 
 #----------------------------------------------------------------------
 # Functions
@@ -263,7 +272,7 @@ def printinfo(file_coord,mol,m,factor):
     print >>sys.stderr, ("{:15s} {:<5d} {:<5d} {:<5d}".format("multiplication:", m[0],m[1],m[2]))
     print >>sys.stderr
     # print atoms
-    print >>sys.stderr, "coordinates:"
+    print >>sys.stderr, "COORDINATES:"
     for i in range(mol.natoms()):
         print  >>sys.stderr, ("{:<6d} {:5s} {:f} {:f} {:f}".format(
                 i, mol.at()[i].type()[0],
