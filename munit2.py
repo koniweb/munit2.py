@@ -151,14 +151,6 @@ def main():
         moli.mol_multiply(m[0],m[1],m[2])
         
         #-- output ------------------------------------------------------------
-        # set comment as vectors for xyz file
-        moli.set_comment("a {:15.10f} {:15.10f} {:15.10f}  "\
-                         "b {:15.10f} {:15.10f} {:15.10f}  "\
-                         "c {:15.10f} {:15.10f} {:15.10f}".format(
-                moli.vec()[0][0],moli.vec()[0][1],moli.vec()[0][2],
-                moli.vec()[1][0],moli.vec()[1][1],moli.vec()[1][2],
-                moli.vec()[2][0],moli.vec()[2][1],moli.vec()[2][2]))
-
         output(version,out,moli)
         
 
@@ -304,7 +296,7 @@ def readinfo(inf,file_coord):
 def output(version,out,mol):
     filetype=out[0]
     if   (filetype=="xyz"):
-        mol=mol.writexyz("")
+        mol=mol.writeexyz("")
     elif (filetype=="lammps"):
         lchargeout=out[1]
         lmolout=out[2]
