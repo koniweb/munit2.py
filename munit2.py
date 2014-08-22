@@ -296,13 +296,13 @@ def readinfo(inf,file_coord):
 def output(version,out,mol):
     filetype=out[0]
     if   (filetype=="xyz"):
-        mol=mol.writeexyz("")
+        mol.writeexyz("")
     elif (filetype=="lammps"):
         lchargeout=out[1]
         lmolout=out[2]
-        mol[-1]=mol.writelmp("",lcharge=lchargeout,lmoltype=lmolout)
+        mol.writelmp("",lcharge=lchargeout,lmoltype=lmolout)
     elif (filetype=="pwscf"):
-        mol[-1]=mol.writepwscf("")       
+        mol.writepwscf("")       
     else:
         print >>sys.stderr, "output file type not defined"
         stop()
