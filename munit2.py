@@ -103,13 +103,13 @@ def main():
     start(version)   
 
     #-- CHECK FOR INPUT FILE ----------------------------------------------
+    # variable
     try:
         file_coord
     except NameError:
         print >>sys.stderr, "ERROR: Input file not given"
         stop()
 
-    
     #-- PRINT COORDINATES -------------------------------------------------
     if verbose == 1:
         print >>sys.stderr  
