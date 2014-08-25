@@ -110,11 +110,6 @@ def main():
         print >>sys.stderr, "ERROR: Input file not given"
         stop()
 
-    #-- PRINT COORDINATES -------------------------------------------------
-    if verbose == 1:
-        print >>sys.stderr  
-        print >>sys.stderr,  "INFORMATION:"
-
     #-- READ COORDINATE FILES ---------------------------------------------
     mol=readinfo(inf,file_coord)
     # check if multiple xyz
@@ -124,6 +119,17 @@ def main():
             print >>sys.stderr, "ERROR: Input file does not contain a structure"
             stop()        
 
+    #-- VERBOSE HEADER ----------------------------------------------------
+    if verbose == 1:
+        print >>sys.stderr  
+        print >>sys.stderr,  "INFORMATION:"
+
+    #-- CHECK FOR M -------------------------------------------------------
+    if verbose == 1 and m == [0,0,0]:
+        print >>sys.stderr,  "... multiplication automatically set to 1 1 1"
+        m=[1,1,1]
+
+    #-- OUTPUT MOLECULES --------------------------------------------------
     # loop over all molecules in input file
     for moli in mol:
         # read data from pwscf file
@@ -138,17 +144,16 @@ def main():
             v[2]==[0.0,0.0,0.0]):
             moli.set_vecs(a=localvec[0],b=localvec[1],c=localvec[2])
         if moli.offset==[0.0,0.0,0.0]:
-            moli.set_vecs(off=offset)
-        
+            moli.set_vecs(off=offset)        
 
-        #-- print info---------------------------------------------------------
-        if verbose == 1: printinfo(file_coord,moli,m,factor)
-        
         #-- stretch -----------------------------------------------------------
         moli.stretch(factor)
         
         #-- multiply ----------------------------------------------------------
         moli.mol_multiply(m[0],m[1],m[2])
+        
+        #-- print info---------------------------------------------------------
+        if verbose == 1: printinfo(file_coord,moli,m,factor)
         
         #-- output ------------------------------------------------------------
         output(version,out,moli)
