@@ -33,6 +33,6 @@ munit2.py --coo test.xyz --a 1 --b 0 1 0 --c 0 0 1 --m 1 1 1
 
 todo list:
 ==========
-[ ] read in extended xyz especially unitvectors__
+[ ] read in extended xyz especially unitvectors  
 [X] add read in of pwscf out for multiple structures  
-[X] write extended xyz with unitvectors
+[X] write extended xyz with unitvectors  
