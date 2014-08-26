@@ -16,7 +16,7 @@ option            | description
 --f    a  [b   c] | stretch factor for the unitcell  
 --m    x   y   z  | multiplication in x, y, z direction
 --in   option     |  * option for input
-                  |  * xyz -- standard
+                  |  * xyz [e] (standard) --include extended xyz data
                   |  * lammps [c] [m] --include charge/mid
                   |  * pwscf [in/out]
 --datapwscf file  | file to read pwscf simulation setup
@@ -36,3 +36,4 @@ todo list:
 - [ ] read in extended xyz especially unitvectors  
 - [X] add read in of pwscf out for multiple structures  
 - [X] write extended xyz with unitvectors  
+- [X] read in extended xyz files  

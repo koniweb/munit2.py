@@ -207,7 +207,8 @@ def readin(arg):
         stop()
     else:
         if   (arg[1] == 'xyz'):
-            return ['xyz']
+            if    len(arg)>2 and arg[2]=="e": return ['exyz']
+            else: return ['xyz']                    
         elif (arg[1] == 'lammps'):
             # check for additional options
             lchargein=False
@@ -284,6 +285,8 @@ def readinfo(inf,file_coord):
     mol=cm.molecule()
     if   (filetype=="xyz"):
         mol=mol.readxyz(file_coord)
+    elif (filetype=="exyz"):
+        mol=mol.readxyz(file_coord,extended=True)
     elif (filetype=="lammps"):
         lchargein=inf[1]
         lmolin=inf[2]
@@ -301,7 +304,7 @@ def readinfo(inf,file_coord):
 def output(version,out,mol):
     filetype=out[0]
     if   (filetype=="xyz"):
-        mol.writeexyz("")
+        mol.writexyz("",extended=True)
     elif (filetype=="lammps"):
         lchargeout=out[1]
         lmolout=out[2]
@@ -337,7 +340,7 @@ def showhelp():
     print >>sys.stderr, '--f    <a>  [<b>   <c>]  stretch factor for the unitcell '
     print >>sys.stderr, '--m    <x>   <y>   <z>   multiplication in x, y, z direction'
     print >>sys.stderr, '--in   <option>          option for input [xyz]'
-    print >>sys.stderr, '                           xyz'
+    print >>sys.stderr, '                           xyz [e] -- optional extended xyz readin'
     print >>sys.stderr, '                           lammps [c] [m] --include charge/mid'
     print >>sys.stderr, '                           pwscf [in/out]'
     print >>sys.stderr, '--datapwscf <file>       file to read pwscf simulation setup'
