@@ -21,7 +21,7 @@ option            | description
                   |  * pwscf [in/out]
 --datapwscf file  | file to read pwscf simulation setup
 --out  option     | option for output
-                  |  * xyz -- standard
+                  |  * xyz [e] -- standard
                   |  * lammps [c] [m] --include charge/mid
                   |  * pwscf
                                                                   
@@ -33,5 +33,6 @@ munit2.py --coo test.xyz --a 1 --b 0 1 0 --c 0 0 1 --m 1 1 1
 
 todo list:
 ==========
-[ ] extensive testing
-[X] add read in of pwscf out for multiple structures
+-[ ] extensive testing
+-[X] add read in of pwscf out for multiple structures
+-[X] write extended xyz with unitvectors
