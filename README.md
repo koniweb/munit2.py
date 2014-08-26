@@ -16,12 +16,12 @@ option            | description
 --f    a  [b   c] | stretch factor for the unitcell  
 --m    x   y   z  | multiplication in x, y, z direction
 --in   option     |  * option for input
-                  |  * xyz [e] (standard) --include extended xyz data
+standard|  * xyz [e] --include extended xyz data
                   |  * lammps [c] [m] --include charge/mid
                   |  * pwscf [in/out]
 --datapwscf file  | file to read pwscf simulation setup
 --out  option     | option for output
-                  |  * xyz [e] -- standard
+standard                  |  * xyz [e] -- standard
                   |  * lammps [c] [m] --include charge/mid
                   |  * pwscf
                                                                   
