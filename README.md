@@ -7,7 +7,7 @@ to invoke munit2.py you have the following options:
 option            | description
 :-----------------|:-----------------------------------------
 --h               | show this help
---q               | quiet output
+--v               | verbose output
 --coo  coord      | show coordinate file
 --a    x  [y   z] | x, y, z components from unitvector a
 --b   [x]  y  [z] | x, y, z components from unitvector b
