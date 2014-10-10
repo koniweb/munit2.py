@@ -103,12 +103,13 @@ def main():
     start(version)   
 
     #-- CHECK FOR INPUT FILE ----------------------------------------------
-    # variable
+    # filenames
     try:
-        file_coord
-    except NameError:
+        testopen=open(file_coord,"r")
+    except (IOError, OSError,NameError):
         print >>sys.stderr, "ERROR: Input file not given"
         stop()
+    testopen.close()
 
     #-- READ COORDINATE FILES ---------------------------------------------
     mol=readinfo(inf,file_coord)
