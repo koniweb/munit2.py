@@ -17,8 +17,9 @@
 # 2014-07-30 Version 2.2  -- lammps input reads charge and molid     #
 # 2014-08-07 Version 2.3  -- multiple xyz output                     #
 # 2014-08-14              -- check for input file                    #
+# 2014-11-11 Version 2.4  -- Correction of pwscfdata input reading   #
 ######################################################################
-version="2.3"
+version="2.4"
 
 #----------------------------------------------------------------------
 # import
@@ -135,7 +136,7 @@ def main():
     for moli in mol:
         # read data from pwscf file
         if not datapwscf=="":
-            moli.setup_pwscf=mol.SETUP_PWSCF()
+            moli.setup_pwscf=moli.SETUP_PWSCF()
             moli.read_setup_pwscf(datapwscf)                                       
         
         # add vec and offset
