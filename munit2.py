@@ -18,8 +18,10 @@
 # 2014-08-07 Version 2.3  -- multiple xyz output                     #
 # 2014-08-14              -- check for input file                    #
 # 2014-11-11 Version 2.4  -- Correction of pwscfdata input reading   #
+# 2014-12-23 Version 2.5  -- sort atoms and choose collection        #
 ######################################################################
-version="2.4"
+# todo implement delete deletelist
+version="2.5"
 
 #----------------------------------------------------------------------
 # import
@@ -49,10 +51,16 @@ def main():
                [float(0.000),float(0.000),float(1.000)]]
     offset=    [float(0.000),float(0.000),float(0.000)]
     m=[int(0),int(0),int(0)]
+    # sort variable
+    sortdir=[]
+    # selection variable
+    selection=[]
+
+    #-- PRINT START INFORMATION -------------------------------------------
+    start(version)   
 
     # READING user commands
     if len(sys.argv) < 2:
-        start(version)
         print >>sys.stderr, 'no user arguments'
         stop()
     
@@ -90,19 +98,34 @@ def main():
             factor=readfactor(arg)
         elif arg[0]=='m':
             m=readvecint(arg,m,'m')
+        # sort  datafield sortdir
+        elif arg[0]=='s':
+            if len(arg)==1:
+                sortdir.append(0)
+                sortdir.append(1)
+                sortdir.append(2)
+            for argi in arg[1:]: 
+                if   argi=="x":sortdir.append(0)
+                elif argi=="y":sortdir.append(1)
+                elif argi=="z":sortdir.append(2)
+                else: 
+                    print >> sys.stderr, ("sorting direction \"{:s}\" not known").format(argi)
+                    stop()
+        # select atoms
+        elif arg[0]=='sel':
+            readselection(arg[1:],selection)
         # verbose
         elif arg[0]=='v':
             verbose=1
+            if len(arg)>1: 
+                if (arg[1]=="xyz"): verbose=2
+                else: print >>sys.stderr, ("verbose option:\"{:s}\" not known").format(arg[1])
         # else
         else:
-            start(version)
-            print >>sys.stderr, "option ",arg[0]," not known"
+            print >>sys.stderr, ("option \"{:s}\" not known").format(arg[0])
             stop()
             
     
-    #-- PRINT START INFORMATION -------------------------------------------
-    start(version)   
-
     #-- CHECK FOR INPUT FILE ----------------------------------------------
     # filenames
     try:
@@ -121,19 +144,21 @@ def main():
             print >>sys.stderr, "ERROR: Input file does not contain a structure"
             stop()        
 
-    #-- VERBOSE HEADER ----------------------------------------------------
-    if verbose == 1:
-        print >>sys.stderr  
-        print >>sys.stderr,  "INFORMATION:"
-
     #-- CHECK FOR M -------------------------------------------------------
-    if verbose == 1 and m == [0,0,0]:
-        print >>sys.stderr,  "... multiplication automatically set to 1 1 1"
+    if verbose > 0 and m == [0,0,0]:
+        print >>sys.stderr,  "... multiplication automatically set to 1 1 1 \n"
         m=[1,1,1]
 
     #-- OUTPUT MOLECULES --------------------------------------------------
     # loop over all molecules in input file
+    cntmol=0
     for moli in mol:
+        cntmol+=1
+        # print atomcounter
+        print >>sys.stderr, ('# Molecule {:d}/{:d}').format(cntmol,len(mol))
+        if verbose > 0:
+            print >>sys.stderr, ('#-----------------------------------------------------------')
+            
         # read data from pwscf file
         if not datapwscf=="":
             moli.setup_pwscf=moli.SETUP_PWSCF()
@@ -155,8 +180,28 @@ def main():
         moli.mol_multiply(m[0],m[1],m[2])
         
         #-- print info---------------------------------------------------------
-        if verbose == 1: printinfo(file_coord,moli,m,factor)
+        if verbose > 0: printinfo(file_coord,moli,m,factor,sortdir,selection)
+        if verbose > 1: printcoo(file_coord,moli,m,factor)
         
+        # sorting
+        for dir in sortdir:
+            print >> sys.stderr, ("...sorting in {:d}-direction").format(dir)
+            moli.sortatoms(dir)
+
+        # selection
+        atomlist=[]
+        deletelist=[]
+        # build full list
+        for sel in selection:
+            if sel[0]==-1: sel[0]=0
+            if sel[1]==-1: sel[1]=moli.natoms()-1
+            for i in range(sel[0],sel[1]+1): atomlist.append(i)
+        # reverse selection
+        for i in range(moli.natoms()):
+            if not (i in atomlist): deletelist.append(i)
+        # TODO delete atoms from deletelist
+        # print deletelist # DEBUG
+
         #-- output ------------------------------------------------------------
         output(version,out,moli)
         
@@ -171,7 +216,7 @@ def readvec(arg,vector,name="",dir=-1):
         vector[dir]=float(arg[1])
     elif len(arg)==4: vector=[float(arg[1]),float(arg[2]),float(arg[3])]
     else:
-        print >>sys.stderr, 'vector ',name,' not given completly'
+        print >>sys.stderr, 'vector ',name,' not given completly' 
         stop()
     return vector
 def readvecint(arg,vector,name=""):
@@ -228,7 +273,6 @@ def readin(arg):
             print  >>sys.stderr, 'input option not known'
             stop()
         
-
 # reading options
 def readout(arg):
     if  len(arg)< 2:
@@ -256,25 +300,42 @@ def readout(arg):
             stop()
 
 # printing info
-def printinfo(file_coord,mol,m,factor):
-    print >>sys.stderr, ("{:15s} {:<20s}".format("coordinatefile:", file_coord))
-    print >>sys.stderr, ("{:15s} {:<20d}".format("natoms:",mol.natoms()))
+def printinfo(file_coord,mol,m,factor,sortdir,selection):
+    S="  "
+    #INFORMATION
+    print >>sys.stderr, ("{:s}INFORMATION:").format(S)
+    print >>sys.stderr, ("{:s}{:s}{:15s} {:<20s}".format(S,S,"coordinatefile:", file_coord))
+    print >>sys.stderr, ("{:s}{:s}{:15s} {:<20d}".format(S,S,"natoms:",mol.natoms()))
     v=mol.vec()
     o=mol.offset()
-    print >>sys.stderr, ("{:15s} {:<15.10f} {:<15.10f} {:<15.10f}".format("vector a:", v[0][0], v[0][1], v[0][2]))
-    print >>sys.stderr, ("{:15s} {:<15.10f} {:<15.10f} {:<15.10f}".format("vector b:", v[1][0], v[1][1], v[1][2]))
-    print >>sys.stderr, ("{:15s} {:<15.10f} {:<15.10f} {:<15.10f}".format("vector c:", v[2][0], v[2][1], v[2][2]))
-    print >>sys.stderr, ("{:15s} {:<15.10f} {:<15.10f} {:<15.10f}".format("offset:", o[0], o[1], o[2]))
+    print >>sys.stderr, ("{:s}{:s}{:15s} {:<15.10f} {:<15.10f} {:<15.10f}".format(S,S,"vector a:", v[0][0], v[0][1], v[0][2]))
+    print >>sys.stderr, ("{:s}{:s}{:15s} {:<15.10f} {:<15.10f} {:<15.10f}".format(S,S,"vector b:", v[1][0], v[1][1], v[1][2]))
+    print >>sys.stderr, ("{:s}{:s}{:15s} {:<15.10f} {:<15.10f} {:<15.10f}".format(S,S,"vector c:", v[2][0], v[2][1], v[2][2]))
+    print >>sys.stderr, ("{:s}{:s}{:15s} {:<15.10f} {:<15.10f} {:<15.10f}".format(S,S,"offset:", o[0], o[1], o[2]))
     print >>sys.stderr
     f=factor
-    print >>sys.stderr, ("{:15s}".format("OPTIONS:"))
-    print >>sys.stderr, ("{:15s} {:<15.10f} {:<15.10f} {:<15.10f}".format("factor:", f[0], f[1], f[2]))
-    print >>sys.stderr, ("{:15s} {:<5d} {:<5d} {:<5d}".format("multiplication:", m[0],m[1],m[2]))
+    #OPTIONS
+    print >>sys.stderr, ("{:s}{:15s}".format(S,"OPTIONS:"))
+    print >>sys.stderr, ("{:s}{:s}{:15s} {:<15.10f} {:<15.10f} {:<15.10f}".format(S,S,"factor:", f[0], f[1], f[2]))
+    print >>sys.stderr, ("{:s}{:s}{:15s} {:<5d} {:<5d} {:<5d}".format(S,S,"multiplication:", m[0],m[1],m[2]))
+    # sorting
+    if len(sortdir)>0:
+        print >>sys.stderr, ("{:s}{:s}{:15s} {:<5d} {:<5d} {:<5d}".format(S,S,"sorting:", sortdir[0],sortdir[1],sortdir[2]))
+    #else: print >>sys.stderr, ("{:s}{:s}{:15s} {:<5s}".format(S,S,"sorting:", "NONE"))
+    # selection
+    for sel in selection:
+        print >>sys.stderr, ("{:s}{:s}{:15s} {:<5d} {:<5d}".format(S,S,"selection:", sel[0],sel[1]))
+    #else: print >>sys.stderr, ("{:s}{:s}{:15s} {:<5s}".format(S,S,"selection:", "ALL"))
     print >>sys.stderr
-    # print atoms
-    print >>sys.stderr, "COORDINATES:"
+
+# printing coordinates
+def printcoo(file_coord,mol,m,factor):
+    S="  "
+    # COORDINATES
+    print >>sys.stderr, ("{:s}COORDINATES:").format(S)
     for i in range(mol.natoms()):
-        print  >>sys.stderr, ("{:<6d} {:5s} {:f} {:f} {:f}".format(
+        print  >>sys.stderr, ("{:s}{:s}{:<6d} {:5s} {:f} {:f} {:f}".format(
+                S,S,
                 i, mol.at()[i].type()[0],
                 mol.at()[i].coord()[0],
                 mol.at()[i].coord()[1],
@@ -301,6 +362,17 @@ def readinfo(inf,file_coord):
         print >>sys.stderr, "coordinatefile type not defined"
         stop()
     return mol
+
+# read selection
+def readselection(arg,selection):
+    # TODO check for erreous selections
+    for argi in arg:
+        argi=argi.split(":")
+        # substitute empty string with -1 for beginning or end
+        for i in range(len(argi)):
+            if not argi[i]: argi[i]=-1
+        # append to selection array
+        if len(argi)==2: selection.append([int(argi[0]),int(argi[1])])
 
 # write output file
 def output(version,out,mol):
@@ -333,7 +405,7 @@ def stop():
 def showhelp():
     print >>sys.stderr, 'to invoke munit2.py you have the following options:'
     print >>sys.stderr, '--h                      show this help'
-    print >>sys.stderr, '--v                      verbose output'
+    print >>sys.stderr, '--v [xyz]                verbose output'
     print >>sys.stderr, '--coo  <coord>           show coordinate file'
     print >>sys.stderr, '--a    <x>  [<y>   <z>]  x, y, z components from unitvector a'
     print >>sys.stderr, '--b   [<x>]  <y>  [<z>]  x, y, z components from unitvector b'
@@ -341,6 +413,8 @@ def showhelp():
     print >>sys.stderr, '--off  <x>   <y>   <z>   x, y, z offset of unitvectors'
     print >>sys.stderr, '--f    <a>  [<b>   <c>]  stretch factor for the unitcell '
     print >>sys.stderr, '--m    <x>   <y>   <z>   multiplication in x, y, z direction'
+    print >>sys.stderr, '--s    [dir] [dir] [dir] sort atoms with directions [x,y,z]'
+    print >>sys.stderr, '--sel  [a:b] [...]       select atoms a to b and [...]'
     print >>sys.stderr, '--in   <option>          option for input [xyz]'
     print >>sys.stderr, '                           xyz [e] -- optional extended xyz readin'
     print >>sys.stderr, '                           lammps [c] [m] --include charge/mid'
