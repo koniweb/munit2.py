@@ -186,7 +186,7 @@ def main():
         # sorting
         for dir in sortdir:
             print >> sys.stderr, ("...sorting in {:d}-direction").format(dir)
-            moli.sortatoms(dir)
+            moli.sortatoms(dir,-1)
 
         # selection
         atomlist=[]
