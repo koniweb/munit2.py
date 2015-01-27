@@ -15,6 +15,8 @@ option            | description
 --off  x   y   z  | x, y, z offset of unitvectors
 --f    a  [b   c] | stretch factor for the unitcell  
 --m    x   y   z  | multiplication in x, y, z direction
+--s    [dir] [...] |sort atoms with directions [x,y,z]
+--sel  [a:b] [...] |select atoms a to b and [...]
 --in   option     |  * option for input
 standard|  * xyz [e] --include extended xyz data
                   |  * lammps [c] [m] --include charge/mid
