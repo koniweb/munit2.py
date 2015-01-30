@@ -19,9 +19,10 @@
 # 2014-08-14              -- check for input file                    #
 # 2014-11-11 Version 2.4  -- Correction of pwscfdata input reading   #
 # 2014-12-23 Version 2.5  -- sort atoms and choose collection        #
+# 2015-01-30 Version 2.6  -- select structures out of files          #
 ######################################################################
 # todo implement delete deletelist
-version="2.5"
+version="2.6"
 
 #----------------------------------------------------------------------
 # import
@@ -44,6 +45,7 @@ def main():
     out=['xyz',False]
     verbose=int(0);
     datapwscf=""
+    structures=[]
     # vector, localvec, offset
     factor=[float(1.000),float(1.000),float(1.000)]
     localvec=[ [float(1.000),float(0.000),float(0.000)],
@@ -77,6 +79,9 @@ def main():
         # input files
         elif arg[0]=='coo':
             file_coord=readfilename(arg)
+            if len(arg)>2:  
+                for i in range(2,len(arg)):
+                    structures.append(int(arg[i]))
         elif arg[0]=='datapwscf':
             datapwscf=readfilename(arg)
         # file types
@@ -137,6 +142,19 @@ def main():
 
     #-- READ COORDINATE FILES ---------------------------------------------
     mol=readinfo(inf,file_coord)
+
+    # do selection of structures
+    molnew=[]
+    text=""
+    for struct in structures:
+        if struct < len(mol): 
+            molnew.append(mol[struct])
+            text+=" {:d}".format(struct)
+        else:
+            print >>sys.stderr, "ERROR: molecule does not have {:d} structures".format(struct)
+    mol=molnew
+    print >> sys.stderr, "...structures {:s} where excerpted".format(text)
+
     # check if multiple xyz
     if ( (( not out[0]=="xyz" ) or ( out[0]=="xyz" and out[1]==False)) ):
         if (len(mol)>=1): mol=[mol[-1]]
