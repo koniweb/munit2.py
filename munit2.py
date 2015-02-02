@@ -144,16 +144,17 @@ def main():
     mol=readinfo(inf,file_coord)
 
     # do selection of structures
-    molnew=[]
-    text=""
-    for struct in structures:
-        if struct < len(mol): 
-            molnew.append(mol[struct])
-            text+=" {:d}".format(struct)
-        else:
-            print >>sys.stderr, "ERROR: molecule does not have {:d} structures".format(struct)
-    mol=molnew
-    print >> sys.stderr, "...structures {:s} where excerpted".format(text)
+    if len(structures)>0:
+        molnew=[]
+        text=""
+        for struct in structures:
+            if struct < len(mol): 
+                molnew.append(mol[struct])
+                text+=" {:d}".format(struct)
+            else:
+                print >>sys.stderr, "ERROR: molecule does not have {:d} structures".format(struct)
+        mol=molnew
+        print >> sys.stderr, "...structures {:s} where excerpted".format(text)
 
     # check if multiple xyz
     if ( (( not out[0]=="xyz" ) or ( out[0]=="xyz" and out[1]==False)) ):
