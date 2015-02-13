@@ -20,9 +20,9 @@
 # 2014-11-11 Version 2.4  -- Correction of pwscfdata input reading   #
 # 2014-12-23 Version 2.5  -- sort atoms and choose collection        #
 # 2015-01-30 Version 2.6  -- select structures out of files          #
+# 2015-02-13 Version 2.7  -- select atoms in molecules               #
 ######################################################################
-# todo implement delete deletelist
-version="2.6"
+version="2.7"
 
 #----------------------------------------------------------------------
 # import
@@ -154,7 +154,7 @@ def main():
             else:
                 print >>sys.stderr, "ERROR: molecule does not have {:d} structures".format(struct)
         mol=molnew
-        print >> sys.stderr, "...structures {:s} where excerpted".format(text)
+        print >> sys.stderr, "...structures {:s} were excerpted".format(text)
 
     # check if multiple xyz
     if ( (( not out[0]=="xyz" ) or ( out[0]=="xyz" and out[1]==False)) ):
@@ -218,8 +218,10 @@ def main():
         # reverse selection
         for i in range(moli.natoms()):
             if not (i in atomlist): deletelist.append(i)
-        # TODO delete atoms from deletelist
-        # print deletelist # DEBUG
+        # delete atoms from deletelist
+        deletelist.sort(reverse=True)
+        moli.delete_atoms(deletelist)
+        #print >> sys.stderr,deletelist  #DEBUG
 
         #-- output ------------------------------------------------------------
         output(version,out,moli)
@@ -272,17 +274,22 @@ def readin(arg):
         print  >>sys.stderr, 'input type not given completly'
         stop()
     else:
+        # XYZ
         if   (arg[1] == 'xyz'):
             if    len(arg)>2 and arg[2]=="e": return ['exyz']
             else: return ['xyz']                    
+        # LAMMPS
         elif (arg[1] == 'lammps'):
             # check for additional options
             lchargein=False
             lmolin=False
+            t="lammps"
             for iarg in range(2,len(arg)):
                 if arg[iarg]=="c":   lchargein=True
                 elif arg[iarg]=="m": lmolin=True
-            return ['lammps',lchargein,lmolin]
+                elif arg[iarg]=="out": t=t+"out"
+            return [t,lchargein,lmolin]
+        # PWSCF
         elif (arg[1] == 'pwscf'):
             if len(arg)==3 and arg[2]=="out":
                 return ['pwscfout']
@@ -308,10 +315,11 @@ def readout(arg):
             # check for additional options
             lchargeout=False
             lmolout=False
+            t="lammps"
             for iarg in range(2,len(arg)):
                 if arg[iarg]=="c":   lchargeout=True
                 elif arg[iarg]=="m": lmolout=True
-            return ['lammps',lchargeout,lmolout]
+            return [t,lchargeout,lmolout]
         elif (arg[1] == 'pwscf'):
             return ['pwscf']
         else:
@@ -365,14 +373,19 @@ def printcoo(file_coord,mol,m,factor):
 def readinfo(inf,file_coord):
     filetype=inf[0]
     mol=cm.molecule()
+    # XYZ
     if   (filetype=="xyz"):
         mol=mol.readxyz(file_coord)
     elif (filetype=="exyz"):
         mol=mol.readxyz(file_coord,extended=True)
+    # LAMMPS
     elif (filetype=="lammps"):
         lchargein=inf[1]
         lmolin=inf[2]
         mol=mol.readlmp(file_coord,lchargein,lmolin)
+    elif (filetype=="lammpsout"):
+        mol=mol.readlmpcustomout(file_coord)
+    # PWSCF
     elif (filetype=="pwscfin"):
         mol=mol.readpwscfin(file_coord)
     elif (filetype=="pwscfout"):
@@ -391,7 +404,7 @@ def readselection(arg,selection):
         for i in range(len(argi)):
             if not argi[i]: argi[i]=-1
         # append to selection array
-        if len(argi)==2: selection.append([int(argi[0]),int(argi[1])])
+        if len(argi)==2: selection.append([int(argi[0])-1,int(argi[1])-1])
 
 # write output file
 def output(version,out,mol):
@@ -434,6 +447,7 @@ def showhelp():
     print >>sys.stderr, '--m    <x>   <y>   <z>   multiplication in x, y, z direction'
     print >>sys.stderr, '--s    [dir] [dir] [dir] sort atoms with directions [x,y,z]'
     print >>sys.stderr, '--sel  [a:b] [...]       select atoms a to b and [...]'
+    print >>sys.stderr, '                         atomlist from 1 to natoms'
     print >>sys.stderr, '--in   <option>          option for input [xyz]'
     print >>sys.stderr, '                           xyz [e] -- optional extended xyz readin'
     print >>sys.stderr, '                           lammps [c] [m] --include charge/mid'
