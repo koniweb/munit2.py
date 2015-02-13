@@ -208,7 +208,7 @@ def main():
             moli.sortatoms(dir,-1)
 
         # selection
-        if len(selection>0):
+        if len(selection)>0:
             atomlist=[]
             deletelist=[]
             # build full list
