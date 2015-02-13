@@ -208,20 +208,21 @@ def main():
             moli.sortatoms(dir,-1)
 
         # selection
-        atomlist=[]
-        deletelist=[]
-        # build full list
-        for sel in selection:
-            if sel[0]==-1: sel[0]=0
-            if sel[1]==-1: sel[1]=moli.natoms()-1
-            for i in range(sel[0],sel[1]+1): atomlist.append(i)
-        # reverse selection
-        for i in range(moli.natoms()):
-            if not (i in atomlist): deletelist.append(i)
-        # delete atoms from deletelist
-        deletelist.sort(reverse=True)
-        moli.delete_atoms(deletelist)
-        #print >> sys.stderr,deletelist  #DEBUG
+        if len(selection>0):
+            atomlist=[]
+            deletelist=[]
+            # build full list
+            for sel in selection:
+                if sel[0]==-1: sel[0]=0
+                if sel[1]==-1: sel[1]=moli.natoms()-1
+                for i in range(sel[0],sel[1]+1): atomlist.append(i)
+            # reverse selection
+            for i in range(moli.natoms()):
+                if not (i in atomlist): deletelist.append(i)
+            # delete atoms from deletelist
+            deletelist.sort(reverse=True)
+            moli.delete_atoms(deletelist)
+            #print >> sys.stderr,deletelist  #DEBUG
 
         #-- output ------------------------------------------------------------
         output(version,out,moli)
