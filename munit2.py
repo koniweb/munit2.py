@@ -21,8 +21,9 @@
 # 2014-12-23 Version 2.5  -- sort atoms and choose collection        #
 # 2015-01-30 Version 2.6  -- select structures out of files          #
 # 2015-02-13 Version 2.7  -- select atoms in molecules               #
+# 2015-02-20 Version 2.8  -- sorting optimized                       #
 ######################################################################
-version="2.7"
+version="2.8"
 
 #----------------------------------------------------------------------
 # import
@@ -106,13 +107,19 @@ def main():
         # sort  datafield sortdir
         elif arg[0]=='s':
             if len(arg)==1:
-                sortdir.append(0)
-                sortdir.append(1)
-                sortdir.append(2)
+                sortdir.append(["x",0,1])
+                sortdir.append(["y",1,1])
+                sortdir.append(["z",2,1])
             for argi in arg[1:]: 
-                if   argi=="x":sortdir.append(0)
-                elif argi=="y":sortdir.append(1)
-                elif argi=="z":sortdir.append(2)
+                if   argi[-1:]=="x":
+                    if argi[0:1]=="-":sortdir.append(["-x",0,-1])
+                    else:             sortdir.append([ "x",0, 1])
+                elif argi[-1:]=="y":
+                    if argi[0:1]=="-":sortdir.append(["-y",1,-1])
+                    else:             sortdir.append([ "y",1, 1])
+                elif argi[-1:]=="z":
+                    if argi[0:1]=="-":sortdir.append(["-z",2,-1])
+                    else:             sortdir.append([ "z",2, 1])
                 else: 
                     print >> sys.stderr, ("sorting direction \"{:s}\" not known").format(argi)
                     stop()
@@ -204,8 +211,8 @@ def main():
         
         # sorting
         for dir in sortdir:
-            print >> sys.stderr, ("...sorting in {:d}-direction").format(dir)
-            moli.sortatoms(dir,-1)
+            print >> sys.stderr, ("...sorting in {:>2s}-direction").format(dir[0])
+            moli.sortatoms(dir[1],dir[2])
 
         # selection
         if len(selection)>0:
@@ -348,7 +355,7 @@ def printinfo(file_coord,mol,m,factor,sortdir,selection):
     print >>sys.stderr, ("{:s}{:s}{:15s} {:<5d} {:<5d} {:<5d}".format(S,S,"multiplication:", m[0],m[1],m[2]))
     # sorting
     if len(sortdir)>0:
-        print >>sys.stderr, ("{:s}{:s}{:15s} {:<5d} {:<5d} {:<5d}".format(S,S,"sorting:", sortdir[0],sortdir[1],sortdir[2]))
+        print >>sys.stderr, ("{:s}{:s}{:15s} {:<5s} {:<5s} {:<5s}".format(S,S,"sorting:", sortdir[0][0],sortdir[1][0],sortdir[2][0]))
     #else: print >>sys.stderr, ("{:s}{:s}{:15s} {:<5s}".format(S,S,"sorting:", "NONE"))
     # selection
     for sel in selection:
